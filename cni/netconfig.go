@@ -5,6 +5,8 @@ package cni
 
 import (
 	"encoding/json"
+
+	cniTypes "github.com/containernetworking/cni/pkg/types"
 )
 
 // NetworkConfig represents Azure CNI plugin network configuration.
@@ -25,6 +27,7 @@ type NetworkConfig struct {
 		Address       string `json:"ipAddress,omitempty"`
 		QueryInterval string `json:"queryInterval,omitempty"`
 	}
+	DNS cniTypes.DNS
 }
 
 // ParseNetworkConfig unmarshals network configuration from bytes.

@@ -5,6 +5,7 @@ package network
 
 import (
 	"net"
+	"strings"
 
 	"github.com/Azure/azure-container-networking/cni"
 	"github.com/Azure/azure-container-networking/common"
@@ -19,7 +20,8 @@ import (
 
 const (
 	// Plugin name.
-	name = "azure-vnet"
+	name            = "azure-vnet"
+	podK8sNamespace = "default"
 )
 
 // NetPlugin represents the CNI network plugin.
@@ -201,6 +203,10 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 				},
 			},
 			BridgeName: nwCfg.Bridge,
+			DNS: network.DNSInfo{
+				Servers: nwCfg.DNS.Nameservers,
+				Suffix:  strings.Join(nwCfg.DNS.Search, ","),
+			},
 		}
 
 		err = plugin.nm.CreateNetwork(&nwInfo)
@@ -252,9 +258,9 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 		epInfo.Routes = append(epInfo.Routes, network.RouteInfo{Dst: route.Dst, Gw: route.GW})
 	}
 
-	// Populate DNS info.
-	epInfo.DNS.Suffix = result.DNS.Domain
-	epInfo.DNS.Servers = result.DNS.Nameservers
+	// Populate DNS info. This info is only used by Windows. Namespace is hardcoded to be "default" for now.
+	epInfo.DNS.Suffix = podK8sNamespace + "." + nwInfo.DNS.Suffix
+	epInfo.DNS.Servers = nwInfo.DNS.Servers
 
 	// Create the endpoint.
 	log.Printf("[cni-net] Creating endpoint %v.", epInfo.Id)
