@@ -1,13 +1,22 @@
 {
-  "cniVersion": "0.3.0",
-  "name": "azure",
-  "plugins": [{
-                "type": "azure-vnet",
-                "mode": "bridge",
-                "bridge": "azure0",
-                "ipam": {
-                  "type": "azure-vnet-ipam"
-                }
-            }
-  ]
+   "cniVersion":"0.3.0",
+   "name":"azure",
+   "dns":{
+      "Nameservers":[
+         "168.63.129.16"
+      ],
+      "Search":[
+         "svc.local"
+      ]
+   },
+   "plugins":[
+      {
+         "type":"azure-vnet",
+         "mode":"bridge",
+         "bridge":"azure0",
+         "ipam":{
+            "type":"azure-vnet-ipam"
+         }
+      }
+   ]
 }
