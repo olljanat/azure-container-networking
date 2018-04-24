@@ -43,11 +43,6 @@ func ParseNetworkConfig(b []byte) (*NetworkConfig, error) {
 		nwCfg.CNIVersion = defaultVersion
 	}
 
-	nwCfg.DNS = cniTypes.DNS{
-		Nameservers: []string{"168.63.129.16"},
-		Search:      []string{"svc.local"},
-	}
-
 	return &nwCfg, nil
 }
 
