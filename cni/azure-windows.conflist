@@ -2,10 +2,10 @@
    "cniVersion":"0.3.0",
    "name":"azure",
    "dns":{
-      "Nameservers":[
+      "nameservers":[
          "168.63.129.16"
       ],
-      "Search":[
+      "search":[
          "svc.local"
       ]
    },

@@ -27,7 +27,7 @@ type NetworkConfig struct {
 		Address       string `json:"ipAddress,omitempty"`
 		QueryInterval string `json:"queryInterval,omitempty"`
 	}
-	DNS cniTypes.DNS
+	DNS cniTypes.DNS `json:"dns"`
 }
 
 // ParseNetworkConfig unmarshals network configuration from bytes.
