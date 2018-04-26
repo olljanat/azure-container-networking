@@ -20,8 +20,7 @@ import (
 
 const (
 	// Plugin name.
-	name            = "azure-vnet"
-	podK8sNamespace = "default"
+	name = "azure-vnet"
 )
 
 // NetPlugin represents the CNI network plugin.
@@ -133,6 +132,13 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 
 	defer func() { log.Printf("[cni-net] ADD command completed with result:%+v err:%v.", result, err) }()
 
+	// Parse Pod arguments.
+	podCfg, err := cni.ParseCniArgs(args.Args)
+	k8sNamespace := "default"
+	if err == nil {
+		k8sNamespace = string(podCfg.K8S_POD_NAMESPACE)
+	}
+
 	// Parse network configuration from stdin.
 	nwCfg, err := cni.ParseNetworkConfig(args.StdinData)
 	if err != nil {
@@ -203,10 +209,6 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 				},
 			},
 			BridgeName: nwCfg.Bridge,
-			DNS: network.DNSInfo{
-				Servers: nwCfg.DNS.Nameservers,
-				Suffix:  strings.Join(nwCfg.DNS.Search, ","),
-			},
 		}
 
 		err = plugin.nm.CreateNetwork(&nwInfo)
@@ -240,6 +242,12 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 		}()
 	}
 
+	// Fill in DNS info.
+	nwInfo.DNS = network.DNSInfo{
+		Servers: nwCfg.DNS.Nameservers,
+		Suffix:  strings.Join(nwCfg.DNS.Search, ","),
+	}
+
 	// Initialize endpoint info.
 	epInfo := &network.EndpointInfo{
 		Id:          endpointId,
@@ -258,8 +266,8 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 		epInfo.Routes = append(epInfo.Routes, network.RouteInfo{Dst: route.Dst, Gw: route.GW})
 	}
 
-	// Populate DNS info. This info is only used by Windows. Namespace is hardcoded to be "default" for now.
-	epInfo.DNS.Suffix = podK8sNamespace + "." + nwInfo.DNS.Suffix
+	// Populate DNS info. This info is only used by Windows.
+	epInfo.DNS.Suffix = k8sNamespace + "." + nwInfo.DNS.Suffix
 	epInfo.DNS.Servers = nwInfo.DNS.Servers
 
 	// Create the endpoint.

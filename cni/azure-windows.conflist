@@ -6,7 +6,7 @@
          "168.63.129.16"
       ],
       "search":[
-         "svc.local"
+         "svc.cluster.local"
       ]
    },
    "plugins":[
