@@ -73,7 +73,7 @@ func (nw *network) newEndpointImpl(epInfo *EndpointInfo) (*endpoint, error) {
 		VirtualNetwork: nw.HnsId,
 		DNSSuffix:      epInfo.DNS.Suffix,
 		DNSServerList:  strings.Join(epInfo.DNS.Servers, ","),
-		Policies:       SerializeNwPolicies(epInfo.Policies),
+		Policies:       SerializePolicies(EndpointPolicy, epInfo.Policies),
 	}
 
 	// TODO: remove this. enable outbound NAT

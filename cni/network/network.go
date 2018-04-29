@@ -151,6 +151,7 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 	// Initialize values from network config.
 	networkId := nwCfg.Name
 	endpointId := plugin.GetEndpointID(args)
+	policies := network.GetPoliciesFromNwCfg(nwCfg.AdditionalArgs)
 
 	// Check whether the network already exists.
 	nwInfo, err := plugin.nm.GetNetworkInfo(networkId)
@@ -213,17 +214,7 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 				Servers: nwCfg.DNS.Nameservers,
 				Suffix:  strings.Join(nwCfg.DNS.Search, ","),
 			},
-		}
-
-		// Fill in policy info.
-		for _, pair := range nwCfg.AdditionalArgs {
-			if strings.Contains(pair.Name, "Policy") {
-				policy := network.Policy{
-					Type: network.CNIPolicyType(pair.Name),
-					Data: pair.Value,
-				}
-				nwInfo.Policies = append(nwInfo.Policies, policy)
-			}
+			Policies: policies,
 		}
 
 		err = plugin.nm.CreateNetwork(&nwInfo)
@@ -265,10 +256,10 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 		IfName:      args.IfName,
 		// Windows only DNS info.
 		DNS: network.DNSInfo{
-			Suffix:  k8sNamespace + "." + nwInfo.DNS.Suffix,
-			Servers: nwInfo.DNS.Servers,
+			Suffix:  k8sNamespace + "." + strings.Join(nwCfg.DNS.Search, ","),
+			Servers: nwCfg.DNS.Nameservers,
 		},
-		Policies: nwInfo.Policies,
+		Policies: policies,
 	}
 
 	// Populate addresses.
