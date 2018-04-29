@@ -209,6 +209,21 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 				},
 			},
 			BridgeName: nwCfg.Bridge,
+			DNS: network.DNSInfo{
+				Servers: nwCfg.DNS.Nameservers,
+				Suffix:  strings.Join(nwCfg.DNS.Search, ","),
+			},
+		}
+
+		// Fill in policy info.
+		for _, pair := range nwCfg.AdditionalArgs {
+			if strings.Contains(pair.Name, "Policy") {
+				policy := network.Policy{
+					Type: network.CNIPolicyType(pair.Name),
+					Data: pair.Value,
+				}
+				nwInfo.Policies = append(nwInfo.Policies, policy)
+			}
 		}
 
 		err = plugin.nm.CreateNetwork(&nwInfo)
@@ -242,18 +257,18 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 		}()
 	}
 
-	// Fill in DNS info.
-	nwInfo.DNS = network.DNSInfo{
-		Servers: nwCfg.DNS.Nameservers,
-		Suffix:  strings.Join(nwCfg.DNS.Search, ","),
-	}
-
 	// Initialize endpoint info.
 	epInfo := &network.EndpointInfo{
 		Id:          endpointId,
 		ContainerID: args.ContainerID,
 		NetNsPath:   args.Netns,
 		IfName:      args.IfName,
+		// Windows only DNS info.
+		DNS: network.DNSInfo{
+			Suffix:  k8sNamespace + "." + nwInfo.DNS.Suffix,
+			Servers: nwInfo.DNS.Servers,
+		},
+		Policies: nwInfo.Policies,
 	}
 
 	// Populate addresses.
@@ -265,10 +280,6 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 	for _, route := range result.Routes {
 		epInfo.Routes = append(epInfo.Routes, network.RouteInfo{Dst: route.Dst, Gw: route.GW})
 	}
-
-	// Populate DNS info. This info is only used by Windows.
-	epInfo.DNS.Suffix = k8sNamespace + "." + nwInfo.DNS.Suffix
-	epInfo.DNS.Servers = nwInfo.DNS.Servers
 
 	// Create the endpoint.
 	log.Printf("[cni-net] Creating endpoint %v.", epInfo.Id)

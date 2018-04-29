@@ -30,6 +30,7 @@ type EndpointInfo struct {
 	IPAddresses []net.IPNet
 	Routes      []RouteInfo
 	DNS         DNSInfo
+	Policies    []Policy
 	Data        map[string]interface{}
 }
 

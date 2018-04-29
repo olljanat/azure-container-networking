@@ -73,11 +73,12 @@ func (nw *network) newEndpointImpl(epInfo *EndpointInfo) (*endpoint, error) {
 		VirtualNetwork: nw.HnsId,
 		DNSSuffix:      epInfo.DNS.Suffix,
 		DNSServerList:  strings.Join(epInfo.DNS.Servers, ","),
+		Policies:       SerializeNwPolicies(epInfo.Policies),
 	}
 
-	//enable outbound NAT
-	var enableOutBoundNat = json.RawMessage(`{"Type":  "OutBoundNAT"}`)
-	hnsEndpoint.Policies = append(hnsEndpoint.Policies, enableOutBoundNat)
+	// TODO: remove this. enable outbound NAT
+	// var enableOutBoundNat = json.RawMessage(`{"Type":  "OutBoundNAT"}`)
+	// hnsEndpoint.Policies = append(hnsEndpoint.Policies, enableOutBoundNat)
 
 	// HNS currently supports only one IP address per endpoint.
 	if epInfo.IPAddresses != nil {

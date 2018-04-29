@@ -6,8 +6,15 @@ package cni
 import (
 	"encoding/json"
 
+	"github.com/Azure/azure-container-networking/log"
 	cniTypes "github.com/containernetworking/cni/pkg/types"
 )
+
+// KVPair represents a K-V pair of a json object.
+type KVPair struct {
+	Name  string          `json:"name"`
+	Value json.RawMessage `json:"value"`
+}
 
 // NetworkConfig represents Azure CNI plugin network configuration.
 type NetworkConfig struct {
@@ -27,7 +34,8 @@ type NetworkConfig struct {
 		Address       string `json:"ipAddress,omitempty"`
 		QueryInterval string `json:"queryInterval,omitempty"`
 	}
-	DNS cniTypes.DNS `json:"dns"`
+	DNS            cniTypes.DNS `json:"dns"`
+	AdditionalArgs []KVPair
 }
 
 type K8SPodEnvArgs struct {
@@ -51,6 +59,8 @@ func ParseCniArgs(args string) (*K8SPodEnvArgs, error) {
 // ParseNetworkConfig unmarshals network configuration from bytes.
 func ParseNetworkConfig(b []byte) (*NetworkConfig, error) {
 	nwCfg := NetworkConfig{}
+
+	log.Printf("-----\n\n\n\n%s\n\n\n\n-----", string(b[:]))
 
 	err := json.Unmarshal(b, &nwCfg)
 	if err != nil {

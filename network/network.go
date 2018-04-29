@@ -46,6 +46,7 @@ type NetworkInfo struct {
 	Mode       string
 	Subnets    []SubnetInfo
 	DNS        DNSInfo
+	Policies   []Policy
 	BridgeName string
 	Options    map[string]interface{}
 }

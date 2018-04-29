@@ -22,6 +22,16 @@ const (
 // Windows implementation of route.
 type route interface{}
 
+// SerializeNwPolicies serializes network policies to json.
+func SerializeNwPolicies(policies []Policy) []json.RawMessage {
+	var jsonPolicies []json.RawMessage
+	for _, policy := range policies {
+		jsonPolicies = append(jsonPolicies, policy.Data)
+	}
+
+	return jsonPolicies
+}
+
 // NewNetworkImpl creates a new container network.
 func (nm *networkManager) newNetworkImpl(nwInfo *NetworkInfo, extIf *externalInterface) (*network, error) {
 	// Initialize HNS network.
@@ -30,6 +40,7 @@ func (nm *networkManager) newNetworkImpl(nwInfo *NetworkInfo, extIf *externalInt
 		NetworkAdapterName: extIf.Name,
 		DNSSuffix:          nwInfo.DNS.Suffix,
 		DNSServerList:      strings.Join(nwInfo.DNS.Servers, ","),
+		Policies:           SerializeNwPolicies(nwInfo.Policies),
 	}
 
 	// Set network mode.
