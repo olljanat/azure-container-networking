@@ -9,12 +9,14 @@ import (
 
 	"github.com/Azure/azure-container-networking/cni"
 	"github.com/Azure/azure-container-networking/common"
+	"github.com/Azure/azure-container-networking/ipam"
 	"github.com/Azure/azure-container-networking/log"
 	"github.com/Azure/azure-container-networking/network"
 	"github.com/Azure/azure-container-networking/platform"
 	"github.com/Azure/azure-container-networking/telemetry"
 
 	cniSkel "github.com/containernetworking/cni/pkg/skel"
+	"github.com/containernetworking/cni/pkg/types/current"
 	cniTypesCurr "github.com/containernetworking/cni/pkg/types/current"
 )
 
@@ -150,9 +152,20 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 
 	// Initialize values from network config.
 	networkId := nwCfg.Name
-	endpointId := plugin.GetEndpointID(args)
-	policies := network.GetPoliciesFromNwCfg(nwCfg.AdditionalArgs)
+	endpointId := network.GetEndpointID(args)
+	/* Handle consecutive ADD calls for infrastructure containers.
+	 * This is a temporary work around for issue #57253 of Kubernetes.
+	 * We can delete this if statement once they fix it.
+	 * Issue link: https://github.com/kubernetes/kubernetes/issues/57253
+	 */
+	ep, _ := plugin.nm.GetEndpointInfo(networkId, endpointId)
+	if ep != nil {
+		log.Printf("[cni-net] Endpoint already exists. Exit.")
+		return nil
+	}
 
+	policies := network.GetPoliciesFromNwCfg(nwCfg.AdditionalArgs)
+	var ipconfig *current.IPConfig
 	// Check whether the network already exists.
 	nwInfo, err := plugin.nm.GetNetworkInfo(networkId)
 	if err != nil {
@@ -167,7 +180,7 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 		}
 
 		// Derive the subnet prefix from allocated IP address.
-		ipconfig := result.IPs[0]
+		ipconfig = result.IPs[0]
 		subnetPrefix := ipconfig.Address
 		subnetPrefix.IP = subnetPrefix.IP.Mask(subnetPrefix.Mask)
 
@@ -237,7 +250,7 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 			return err
 		}
 
-		ipconfig := result.IPs[0]
+		ipconfig = result.IPs[0]
 
 		// On failure, call into IPAM plugin to release the address.
 		defer func() {
@@ -275,9 +288,15 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 	// Create the endpoint.
 	log.Printf("[cni-net] Creating endpoint %v.", epInfo.Id)
 	err = plugin.nm.CreateEndpoint(networkId, epInfo)
-	if err != nil {
+	if err != nil && err != ipam.ErrAddressExists {
 		err = plugin.Errorf("Failed to create endpoint: %v", err)
 		return err
+	}
+
+	// Call IPAM to release the ip address.
+	if err == ipam.ErrAddressExists {
+		nwCfg.Ipam.Address = ipconfig.Address.IP.String()
+		plugin.DelegateDel(nwCfg.Ipam.Type, nwCfg)
 	}
 
 	// Add Interfaces to result.
@@ -319,7 +338,7 @@ func (plugin *netPlugin) Delete(args *cniSkel.CmdArgs) error {
 
 	// Initialize values from network config.
 	networkId := nwCfg.Name
-	endpointId := plugin.GetEndpointID(args)
+	endpointId := network.GetEndpointID(args)
 
 	// Query the network.
 	nwInfo, err := plugin.nm.GetNetworkInfo(networkId)

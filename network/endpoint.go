@@ -7,6 +7,7 @@ import (
 	"net"
 
 	"github.com/Azure/azure-container-networking/log"
+	cniSkel "github.com/containernetworking/cni/pkg/skel"
 )
 
 // Endpoint represents a container network interface.
@@ -38,6 +39,16 @@ type EndpointInfo struct {
 type RouteInfo struct {
 	Dst net.IPNet
 	Gw  net.IP
+}
+
+// GetEndpointID returns a unique endpoint ID based on the CNI args.
+func GetEndpointID(args *cniSkel.CmdArgs) string {
+	containerID := args.ContainerID
+	if len(containerID) > 8 {
+		containerID = containerID[:8]
+	}
+
+	return containerID + "-" + args.IfName
 }
 
 // NewEndpoint creates a new endpoint in the network.

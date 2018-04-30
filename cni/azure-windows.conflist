@@ -25,8 +25,7 @@
                   "Type":"OutBoundNAT",
                   "ExceptionList":[
                      "10.240.0.0/16",
-                     "10.0.0.0/8",
-                     "10.124.24.0/23"
+                     "10.0.0.0/8"
                   ]
                }
             },
@@ -35,14 +34,6 @@
                "Value":{
                   "Type":"ROUTE",
                   "DestinationPrefix":"10.0.0.0/8",
-                  "NeedEncap":true
-               }
-            },
-            {
-               "Name":"EndpointPolicy",
-               "Value":{
-                  "Type":"ROUTE",
-                  "DestinationPrefix":"10.124.24.196/32",
                   "NeedEncap":true
                }
             }

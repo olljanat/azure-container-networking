@@ -18,3 +18,7 @@ var (
 	errEndpointInUse      = fmt.Errorf("Endpoint is already joined to a sandbox")
 	errEndpointNotInUse   = fmt.Errorf("Endpoint is not joined to a sandbox")
 )
+
+var (
+	ErrEndpointNotFound = fmt.Errorf("Endpoint not found")
+)
