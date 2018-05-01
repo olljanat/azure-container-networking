@@ -52,10 +52,6 @@ func (nw *network) newEndpointImpl(epInfo *EndpointInfo) (*endpoint, error) {
 		Policies:       SerializePolicies(EndpointPolicy, epInfo.Policies),
 	}
 
-	// TODO: remove this. enable outbound NAT
-	// var enableOutBoundNat = json.RawMessage(`{"Type":  "OutBoundNAT"}`)
-	// hnsEndpoint.Policies = append(hnsEndpoint.Policies, enableOutBoundNat)
-
 	// HNS currently supports only one IP address per endpoint.
 	if epInfo.IPAddresses != nil {
 		hnsEndpoint.IPAddress = epInfo.IPAddresses[0].IP
