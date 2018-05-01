@@ -7,6 +7,7 @@ import (
 	"net"
 
 	"github.com/Azure/azure-container-networking/log"
+	"github.com/Microsoft/hcsshim"
 	cniSkel "github.com/containernetworking/cni/pkg/skel"
 )
 
@@ -43,12 +44,13 @@ type RouteInfo struct {
 
 // GetEndpointID returns a unique endpoint ID based on the CNI args.
 func GetEndpointID(args *cniSkel.CmdArgs) string {
-	containerID := args.ContainerID
-	if len(containerID) > 8 {
-		containerID = containerID[:8]
-	}
+	infraEpId, _ := ConstructEpName(args.ContainerID, args.Netns, args.IfName)
+	return infraEpId
+}
 
-	return containerID + "-" + args.IfName
+// HotAttachEndpoint is a wrapper of hcsshim's HotAttachEndpoint.
+func (endpoint *EndpointInfo) HotAttachEndpoint(containerID string) error {
+	return hcsshim.HotAttachEndpoint(containerID, endpoint.Id)
 }
 
 // NewEndpoint creates a new endpoint in the network.
