@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/Azure/azure-container-networking/cni"
 	"github.com/Azure/azure-container-networking/log"
 	"github.com/Microsoft/hcsshim"
 )
@@ -30,7 +31,7 @@ func (nm *networkManager) newNetworkImpl(nwInfo *NetworkInfo, extIf *externalInt
 		NetworkAdapterName: extIf.Name,
 		DNSSuffix:          nwInfo.DNS.Suffix,
 		DNSServerList:      strings.Join(nwInfo.DNS.Servers, ","),
-		Policies:           SerializePolicies(NetworkPolicy, nwInfo.Policies),
+		Policies:           cni.SerializePolicies(cni.NetworkPolicy, nwInfo.Policies),
 	}
 
 	// Set network mode.

@@ -1,10 +1,8 @@
-package network
+package cni
 
 import (
 	"encoding/json"
 	"strings"
-
-	"github.com/Azure/azure-container-networking/cni"
 )
 
 type CNIPolicyType string
@@ -33,7 +31,7 @@ func SerializePolicies(policyType CNIPolicyType, policies []Policy) []json.RawMe
 }
 
 // GetPoliciesFromNwCfg returns network policies from network config.
-func GetPoliciesFromNwCfg(kvp []cni.KVPair) []Policy {
+func GetPoliciesFromNwCfg(kvp []KVPair) []Policy {
 	var policies []Policy
 	for _, pair := range kvp {
 		if strings.Contains(pair.Name, PolicyStr) {

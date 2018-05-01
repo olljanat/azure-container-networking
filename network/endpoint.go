@@ -6,6 +6,7 @@ package network
 import (
 	"net"
 
+	"github.com/Azure/azure-container-networking/cni"
 	"github.com/Azure/azure-container-networking/log"
 	"github.com/Microsoft/hcsshim"
 	cniSkel "github.com/containernetworking/cni/pkg/skel"
@@ -32,7 +33,7 @@ type EndpointInfo struct {
 	IPAddresses []net.IPNet
 	Routes      []RouteInfo
 	DNS         DNSInfo
-	Policies    []Policy
+	Policies    []cni.Policy
 	Data        map[string]interface{}
 }
 

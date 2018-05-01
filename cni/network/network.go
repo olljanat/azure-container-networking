@@ -13,10 +13,8 @@ import (
 	"github.com/Azure/azure-container-networking/network"
 	"github.com/Azure/azure-container-networking/platform"
 	"github.com/Azure/azure-container-networking/telemetry"
-	"github.com/Microsoft/hcsshim"
 
 	cniSkel "github.com/containernetworking/cni/pkg/skel"
-	cniTypes "github.com/containernetworking/cni/pkg/types"
 	cniTypesCurr "github.com/containernetworking/cni/pkg/types/current"
 )
 
@@ -185,45 +183,17 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 	 */
 	epInfo, _ = plugin.nm.GetEndpointInfo(networkId, endpointId)
 	if epInfo != nil {
-		log.Printf("[cni-net] Consecutive ADD call for the same endpoint %v", epInfo)
-		hnsEndpoint, _ := hcsshim.GetHNSEndpointByName(endpointId)
-		if hnsEndpoint != nil {
-			log.Printf("[net] Found existing endpoint through hcsshim: %+v", hnsEndpoint)
-			log.Printf("[net] Attaching ep %v to container %v", hnsEndpoint.Id, args.ContainerID)
+		result, err = HandleConsecutiveAdd(args.ContainerID, endpointId, nwCfg.DNS.Nameservers, nwInfo, nwCfg)
+		if err != nil {
+			return err
+		}
 
-			err = hcsshim.HotAttachEndpoint(args.ContainerID, hnsEndpoint.Id)
-			if err != nil {
-				log.Printf("[cni-net] Failed to hot attach shared endpoint to container [%v], err:%v.", epInfo, err)
-				return err
-			}
-
-			// Populate result.
-			address := nwInfo.Subnets[0].Prefix
-			address.IP = hnsEndpoint.IPAddress
-			result = &cniTypesCurr.Result{
-				IPs: []*cniTypesCurr.IPConfig{
-					{
-						Version: "4",
-						Address: address,
-						Gateway: net.ParseIP(hnsEndpoint.GatewayAddress),
-					},
-				},
-				Routes: []*cniTypes.Route{
-					{
-						Dst: net.IPNet{net.IPv4zero, net.IPv4Mask(0, 0, 0, 0)},
-						GW:  net.ParseIP(hnsEndpoint.GatewayAddress),
-					},
-				},
-			}
-
-			// Populate DNS servers.
-			result.DNS.Nameservers = nwCfg.DNS.Nameservers
-
+		if result != nil {
 			return nil
 		}
 	}
 
-	policies := network.GetPoliciesFromNwCfg(nwCfg.AdditionalArgs)
+	policies := cni.GetPoliciesFromNwCfg(nwCfg.AdditionalArgs)
 
 	// Check whether the network already exists.
 	if nwInfoErr != nil {

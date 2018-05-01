@@ -10,6 +10,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/Azure/azure-container-networking/cni"
 	"github.com/Azure/azure-container-networking/log"
 	"github.com/Microsoft/hcsshim"
 )
@@ -49,7 +50,7 @@ func (nw *network) newEndpointImpl(epInfo *EndpointInfo) (*endpoint, error) {
 		VirtualNetwork: nw.HnsId,
 		DNSSuffix:      epInfo.DNS.Suffix,
 		DNSServerList:  strings.Join(epInfo.DNS.Servers, ","),
-		Policies:       SerializePolicies(EndpointPolicy, epInfo.Policies),
+		Policies:       cni.SerializePolicies(cni.EndpointPolicy, epInfo.Policies),
 	}
 
 	// HNS currently supports only one IP address per endpoint.
