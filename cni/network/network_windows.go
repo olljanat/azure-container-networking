@@ -17,7 +17,7 @@ import (
  * We can delete this if statement once they fix it.
  * Issue link: https://github.com/kubernetes/kubernetes/issues/57253
  */
-func HandleConsecutiveAdd(containerId, endpointId string, dnsServers []string, nwInfo *network.NetworkInfo, nwCfg *cni.NetworkConfig) (*cniTypesCurr.Result, error) {
+func HandleConsecutiveAdd(containerId, endpointId string, nwInfo *network.NetworkInfo, nwCfg *cni.NetworkConfig) (*cniTypesCurr.Result, error) {
 	hnsEndpoint, _ := hcsshim.GetHNSEndpointByName(endpointId)
 	if hnsEndpoint != nil {
 		log.Printf("[net] Found existing endpoint through hcsshim: %+v", hnsEndpoint)

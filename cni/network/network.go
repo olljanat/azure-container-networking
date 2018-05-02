@@ -183,7 +183,7 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 	 */
 	epInfo, _ = plugin.nm.GetEndpointInfo(networkId, endpointId)
 	if epInfo != nil {
-		result, err = HandleConsecutiveAdd(args.ContainerID, endpointId, nwCfg.DNS.Nameservers, nwInfo, nwCfg)
+		result, err = HandleConsecutiveAdd(args.ContainerID, endpointId, nwInfo, nwCfg)
 		if err != nil {
 			return err
 		}
