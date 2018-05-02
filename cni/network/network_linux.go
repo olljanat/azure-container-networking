@@ -6,6 +6,6 @@ import (
 )
 
 // HandleConsecutiveAdd is a dummy function for Linux platform.
-func HandleConsecutiveAdd(containerId, endpointId string, dnsServers []string, nwInfo *NetworkInfo, nwCfg *cni.NetworkConfig) (*cniTypesCurr.Result, error) {
+func HandleConsecutiveAdd(containerId, endpointId string, nwInfo *NetworkInfo, nwCfg *cni.NetworkConfig) (*cniTypesCurr.Result, error) {
 	return nil, nil
 }

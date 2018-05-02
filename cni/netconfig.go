@@ -6,7 +6,6 @@ package cni
 import (
 	"encoding/json"
 
-	"github.com/Azure/azure-container-networking/log"
 	cniTypes "github.com/containernetworking/cni/pkg/types"
 )
 
@@ -59,8 +58,6 @@ func ParseCniArgs(args string) (*K8SPodEnvArgs, error) {
 // ParseNetworkConfig unmarshals network configuration from bytes.
 func ParseNetworkConfig(b []byte) (*NetworkConfig, error) {
 	nwCfg := NetworkConfig{}
-
-	log.Printf("-----\n\n\n\n%s\n\n\n\n-----", string(b[:]))
 
 	err := json.Unmarshal(b, &nwCfg)
 	if err != nil {
