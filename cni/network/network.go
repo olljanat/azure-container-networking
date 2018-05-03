@@ -292,6 +292,11 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 
 	// Initialize endpoint info.
 	var dns network.DNSInfo
+	if (len(nwCfg.DNS.Search) == 0) != (len(nwCfg.DNS.Nameservers) == 0) {
+		err = plugin.Errorf("Wrong DNS configuration: %+v", nwCfg.DNS)
+		return err
+	}
+
 	if len(nwCfg.DNS.Search) > 0 {
 		dns = network.DNSInfo{
 			Servers: nwCfg.DNS.Nameservers,
