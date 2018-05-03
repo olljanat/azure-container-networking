@@ -10,8 +10,8 @@ import (
 	"net"
 	"strings"
 
-	"github.com/Azure/azure-container-networking/cni"
 	"github.com/Azure/azure-container-networking/log"
+	"github.com/Azure/azure-container-networking/network/policy"
 	"github.com/Microsoft/hcsshim"
 )
 
@@ -40,6 +40,11 @@ func ConstructEpName(containerID string, netNsPath string, ifName string) (strin
 	return infraEpName, workloadEpName
 }
 
+// HotAttachEndpoint is a wrapper of hcsshim's HotAttachEndpoint.
+func (endpoint *EndpointInfo) HotAttachEndpoint(containerID string) error {
+	return hcsshim.HotAttachEndpoint(containerID, endpoint.Id)
+}
+
 // newEndpointImpl creates a new endpoint in the network.
 func (nw *network) newEndpointImpl(epInfo *EndpointInfo) (*endpoint, error) {
 	// Get Infrastructure containerID. Handle ADD calls for workload container.
@@ -50,7 +55,7 @@ func (nw *network) newEndpointImpl(epInfo *EndpointInfo) (*endpoint, error) {
 		VirtualNetwork: nw.HnsId,
 		DNSSuffix:      epInfo.DNS.Suffix,
 		DNSServerList:  strings.Join(epInfo.DNS.Servers, ","),
-		Policies:       cni.SerializePolicies(cni.EndpointPolicy, epInfo.Policies),
+		Policies:       policy.SerializePolicies(policy.EndpointPolicy, epInfo.Policies),
 	}
 
 	// HNS currently supports only one IP address per endpoint.

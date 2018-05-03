@@ -31,7 +31,3 @@ var (
 	OptAddressType        = "azure.address.type"
 	OptAddressTypeGateway = "gateway"
 )
-
-var (
-	ErrAddressExists = fmt.Errorf("No available address pools")
-)

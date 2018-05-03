@@ -1,14 +1,12 @@
-package cni
+package policy
 
 import (
 	"encoding/json"
-	"strings"
 )
 
 type CNIPolicyType string
 
 const (
-	PolicyStr         string        = "Policy"
 	NetworkPolicy     CNIPolicyType = "NetworkPolicy"
 	EndpointPolicy    CNIPolicyType = "EndpointPolicy"
 	OutBoundNatPolicy CNIPolicyType = "OutBoundNatPolicy"
@@ -28,20 +26,4 @@ func SerializePolicies(policyType CNIPolicyType, policies []Policy) []json.RawMe
 		}
 	}
 	return jsonPolicies
-}
-
-// GetPoliciesFromNwCfg returns network policies from network config.
-func GetPoliciesFromNwCfg(kvp []KVPair) []Policy {
-	var policies []Policy
-	for _, pair := range kvp {
-		if strings.Contains(pair.Name, PolicyStr) {
-			policy := Policy{
-				Type: CNIPolicyType(pair.Name),
-				Data: pair.Value,
-			}
-			policies = append(policies, policy)
-		}
-	}
-
-	return policies
 }

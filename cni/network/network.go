@@ -184,7 +184,7 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 	 */
 	epInfo, _ = plugin.nm.GetEndpointInfo(networkId, endpointId)
 	if epInfo != nil {
-		result, err = HandleConsecutiveAdd(args.ContainerID, endpointId, nwInfo, nwCfg)
+		result, err = handleConsecutiveAdd(args.ContainerID, endpointId, nwInfo, nwCfg)
 		if err != nil {
 			return err
 		}
@@ -291,17 +291,25 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 	}
 
 	// Initialize endpoint info.
+	var dns network.DNSInfo
+	if len(nwCfg.DNS.Search) > 0 {
+		dns = network.DNSInfo{
+			Servers: nwCfg.DNS.Nameservers,
+			Suffix:  strings.Join(nwCfg.DNS.Search, ","),
+		}
+	} else {
+		dns = network.DNSInfo{
+			Suffix:  result.DNS.Domain,
+			Servers: result.DNS.Nameservers,
+		}
+	}
+
 	epInfo = &network.EndpointInfo{
 		Id:          endpointId,
 		ContainerID: args.ContainerID,
 		NetNsPath:   args.Netns,
 		IfName:      args.IfName,
-		// Windows only DNS info.
-		DNS: network.DNSInfo{
-			Suffix:  k8sNamespace + "." + strings.Join(nwCfg.DNS.Search, ","),
-			Servers: nwCfg.DNS.Nameservers,
-		},
-		Policies: policies,
+		DNS:         dns,
 	}
 
 	// Populate addresses.
@@ -313,6 +321,8 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 	for _, route := range result.Routes {
 		epInfo.Routes = append(epInfo.Routes, network.RouteInfo{Dst: route.Dst, Gw: route.GW})
 	}
+
+	setPolicies(epInfo, policies)
 
 	// Create the endpoint.
 	log.Printf("[cni-net] Creating endpoint %v.", epInfo.Id)

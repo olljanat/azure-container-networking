@@ -6,9 +6,8 @@ package network
 import (
 	"net"
 
-	"github.com/Azure/azure-container-networking/cni"
 	"github.com/Azure/azure-container-networking/log"
-	"github.com/Microsoft/hcsshim"
+	"github.com/Azure/azure-container-networking/network/policy"
 	cniSkel "github.com/containernetworking/cni/pkg/skel"
 )
 
@@ -33,7 +32,7 @@ type EndpointInfo struct {
 	IPAddresses []net.IPNet
 	Routes      []RouteInfo
 	DNS         DNSInfo
-	Policies    []cni.Policy
+	Policies    []policy.Policy
 	Data        map[string]interface{}
 }
 
@@ -47,11 +46,6 @@ type RouteInfo struct {
 func GetEndpointID(args *cniSkel.CmdArgs) string {
 	infraEpId, _ := ConstructEpName(args.ContainerID, args.Netns, args.IfName)
 	return infraEpId
-}
-
-// HotAttachEndpoint is a wrapper of hcsshim's HotAttachEndpoint.
-func (endpoint *EndpointInfo) HotAttachEndpoint(containerID string) error {
-	return hcsshim.HotAttachEndpoint(containerID, endpoint.Id)
 }
 
 // NewEndpoint creates a new endpoint in the network.

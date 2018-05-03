@@ -5,8 +5,15 @@ package cni
 
 import (
 	"encoding/json"
+	"strings"
+
+	"github.com/Azure/azure-container-networking/network/policy"
 
 	cniTypes "github.com/containernetworking/cni/pkg/types"
+)
+
+const (
+	PolicyStr string = "Policy"
 )
 
 // KVPair represents a K-V pair of a json object.
@@ -69,6 +76,22 @@ func ParseNetworkConfig(b []byte) (*NetworkConfig, error) {
 	}
 
 	return &nwCfg, nil
+}
+
+// GetPoliciesFromNwCfg returns network policies from network config.
+func GetPoliciesFromNwCfg(kvp []KVPair) []policy.Policy {
+	var policies []policy.Policy
+	for _, pair := range kvp {
+		if strings.Contains(pair.Name, PolicyStr) {
+			policy := policy.Policy{
+				Type: policy.CNIPolicyType(pair.Name),
+				Data: pair.Value,
+			}
+			policies = append(policies, policy)
+		}
+	}
+
+	return policies
 }
 
 // Serialize marshals a network configuration to bytes.
