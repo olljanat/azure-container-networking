@@ -315,6 +315,7 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 		NetNsPath:   args.Netns,
 		IfName:      args.IfName,
 		DNS:         dns,
+		Policies:    policies,
 	}
 
 	// Populate addresses.
@@ -326,8 +327,6 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 	for _, route := range result.Routes {
 		epInfo.Routes = append(epInfo.Routes, network.RouteInfo{Dst: route.Dst, Gw: route.GW})
 	}
-
-	setPolicies(epInfo, policies)
 
 	// Create the endpoint.
 	log.Printf("[cni-net] Creating endpoint %v.", epInfo.Id)

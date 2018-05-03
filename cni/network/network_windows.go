@@ -6,7 +6,6 @@ import (
 	"github.com/Azure/azure-container-networking/cni"
 	"github.com/Azure/azure-container-networking/log"
 	"github.com/Azure/azure-container-networking/network"
-	"github.com/Azure/azure-container-networking/network/policy"
 	"github.com/Microsoft/hcsshim"
 
 	cniTypes "github.com/containernetworking/cni/pkg/types"
@@ -56,8 +55,4 @@ func handleConsecutiveAdd(containerId, endpointId string, nwInfo *network.Networ
 	}
 
 	return nil, nil
-}
-
-func setPolicies(epInfo *network.EndpointInfo, policies []policy.Policy) {
-	epInfo.Policies = policies
 }
