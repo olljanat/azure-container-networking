@@ -1,3 +1,8 @@
 package policy
 
-type Policy struct{}
+import "encoding/json"
+
+type Policy struct {
+	Type CNIPolicyType
+	Data json.RawMessage
+}
