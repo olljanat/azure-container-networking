@@ -265,6 +265,9 @@ func (am *addressManager) RequestPool(asId, poolId, subPoolId string, options ma
 
 	am.refreshSource()
 
+	if asId == "" {
+		asId = "local"
+	}
 	as, err := am.getAddressSpace(asId)
 	if err != nil {
 		return "", "", err
@@ -333,6 +336,9 @@ func (am *addressManager) RequestAddress(asId, poolId, address string, options m
 
 	am.refreshSource()
 
+	if asId == "" {
+		asId = "local"
+	}
 	as, err := am.getAddressSpace(asId)
 	if err != nil {
 		return "", err
