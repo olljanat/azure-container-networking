@@ -293,6 +293,9 @@ func (am *addressManager) ReleasePool(asId string, poolId string) error {
 
 	am.refreshSource()
 
+	if asId == "" {
+		asId = "local"
+	}
 	as, err := am.getAddressSpace(asId)
 	if err != nil {
 		return err
@@ -369,6 +372,9 @@ func (am *addressManager) ReleaseAddress(asId string, poolId string, address str
 
 	am.refreshSource()
 
+	if asId == "" {
+		asId = "local"
+	}
 	as, err := am.getAddressSpace(asId)
 	if err != nil {
 		return err
